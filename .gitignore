@@ -15,4 +15,12 @@
 # vendor/
 
 .idea
+.bloop
+.bsp
+.metals
+.vscode
+
+project
+target
+
 go.sum
