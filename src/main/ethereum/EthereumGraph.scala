@@ -11,7 +11,7 @@ class EthereumGraph(sc: SparkContext, walletsFile: String, transactionsFile: Str
 
     val graph = Graph(vertexs, edges)
 
-    def dijkstra(srcId: VertexId) = {
+    private def dijkstra(srcId: VertexId) = {
         var distancesGraph = graph.mapVertices((vId,_) => (
                 false, 
                 if (vId == sourceId) 0.0 else Double.PositiveInfinity), 
@@ -40,5 +40,19 @@ class EthereumGraph(sc: SparkContext, walletsFile: String, transactionsFile: Str
         }
 
         distancesGraph
+    }
+
+    def shortestPath(srcWallet: String, dstWallet: String) = {
+        val srcId = graph.vertices.filter((vId, vd) => vd == srcWallet).fold("")(_)._1
+        val distances = dijkstra(srcId)
+
+        val dstId = graph.vertices.filter((vId, vd) => vd == dstWallet).fold("")(_)._1
+        val zeroValue = (0L, (false, Double.MaxValue, Nil))
+        val resultingVertex = graph.vertices.filter((vId, vd) => vId == dstId).fold(zeroValue)(_)
+
+        var hops = List[String]()
+        resultingVertex._3.foreach(x => hops :+ vertexs.filter(_._1 = x).first()._2)
+
+        (resultingVertex._2, hops)
     }
 }
