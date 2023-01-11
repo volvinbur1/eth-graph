@@ -1,10 +1,14 @@
-name := "eth-graph"
+ThisBuild / version := "0.1.0-develop"
 
-version := "0.1"
+ThisBuild / scalaVersion := "2.13.10"
 
-scalaVersion := "2.11.8"
+lazy val root = (project in file("."))
+  .settings(
+    name := "eth-graph",
+    idePackagePrefix := Some("com.github.ethgraph")
+  )
 
-libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "2.2.1",
-  "org.apache.spark" %% "spark-graphx" % "2.2.1"
-)
+// https://mvnrepository.com/artifact/org.apache.spark/spark-core
+libraryDependencies += "org.apache.spark" %% "spark-core" % "3.3.1"
+// https://mvnrepository.com/artifact/org.apache.spark/spark-graphx
+libraryDependencies += "org.apache.spark" %% "spark-graphx" % "3.3.1"
