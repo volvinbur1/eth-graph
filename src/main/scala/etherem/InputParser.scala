@@ -1,4 +1,5 @@
-package com.github.ethgraph.ethereum
+package com.github.ethgraph
+package etherem
 
 import org.apache.spark.graphx.{Edge, VertexId}
 
@@ -15,5 +16,4 @@ object InputParser {
     val fields = line.split('\t')
     Some(Edge(fields(0).toLong, fields(1).toLong, (fields(2).toDouble, fields(3).toDouble, fields(4))))
   }
-
 }
