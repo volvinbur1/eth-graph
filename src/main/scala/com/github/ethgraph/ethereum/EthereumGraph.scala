@@ -14,28 +14,28 @@ class EthereumGraph(sc: SparkContext, walletsFile: String, transactionsFile: Str
     private def dijkstra(srcId: VertexId) = {
         var distancesGraph = graph.mapVertices((vId,_) => (
                 false, 
-                if (vId == sourceId) 0.0 else Double.PositiveInfinity), 
-                if (vId == sourceId) vId :: Nil else Nil
+                if (vId == srcId) 0.0 else Double.PositiveInfinity, 
+                if (vId == srcId) vId :: Nil else Nil)
             )
 
         for (i <- 1L to graph.vertices.count-1) {
             val zeroValue = (0L, (false, Double.MaxValue, Nil))
             val currentVertexId = distancesGraph.vertices
-                    .filter((vId, vd) => !vd._1)
-                    .fold(zeroValue)((a,b) => math.min(a._2._2, b._2._2))
+                    .filter(pred => !pred._2._1)
+                    .fold(zeroValue)((a,b) => if (a._2._2 < b._2._2) a else b)
                     ._1
 
             val newDistances = distancesGraph
                 .aggregateMessages[(Double, List[VertexId])] (
                     ctx => if (ctx.srcId == currentVertexId) 
                                 ctx.sendToDst((ctx.srcAttr._2 + ctx.attr._1, ctx.srcAttr._3 :+ ctx.dstId)),
-                    (a,b) => math.min(a._1, b._1))
+                    (a,b) => if (a._1 < b._1) a else b)
 
             distancesGraph = distancesGraph
                 .outerJoinVertices(newDistances) ((vId, vd, newDist) => (
                     vd._1 || vId == currentVertexId, 
                     math.min(vd._2, newDist.getOrElse((Double.MaxValue, Nil))._1),
-                    if (vd._2 < newDist.getOrElse((Double.MaxValue, Nil))._1) vd._2 else newDist.getOrElse((Double.MaxValue, Nil))._2
+                    if (vd._2 < newDist.getOrElse((Double.MaxValue, Nil))._1) vd._3 else newDist.getOrElse((Double.MaxValue, Nil))._2
                 ))
         }
 
@@ -43,16 +43,16 @@ class EthereumGraph(sc: SparkContext, walletsFile: String, transactionsFile: Str
     }
 
     def shortestPath(srcWallet: String, dstWallet: String) = {
-        val srcId = graph.vertices.filter((vId, vd) => vd == srcWallet).fold("")(_)._1
+        val srcId = vertexs.filter(_._2 == srcWallet).first()._1
+        val dstId = vertexs.filter(_._2 == dstWallet).first()._1
+
         val distances = dijkstra(srcId)
 
-        val dstId = graph.vertices.filter((vId, vd) => vd == dstWallet).fold("")(_)._1
-        val zeroValue = (0L, (false, Double.MaxValue, Nil))
-        val resultingVertex = graph.vertices.filter((vId, vd) => vId == dstId).fold(zeroValue)(_)
+        val resultingVertex = distances.vertices.filter(pred => pred._1 == dstId).first()
 
         var hops = List[String]()
-        resultingVertex._3.foreach(x => hops :+ vertexs.filter(_._1 = x).first()._2)
+        resultingVertex._2._3.foreach(x => hops :+ vertexs.filter(_._1 == x).first()._2)
 
-        (resultingVertex._2, hops)
+        (resultingVertex._2._1, hops)
     }
 }

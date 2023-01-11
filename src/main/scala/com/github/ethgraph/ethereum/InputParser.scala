@@ -11,9 +11,9 @@ object InputParser {
     Some(fields(0).toLong, fields(1))
   }
 
-  def getTransaction(line: String): Edge[String] = {
+  def getTransaction(line: String): Option[Edge[(Double, Double, String)]] = {
     val fields = line.split('\t')
-    Edge(fields(0).toLong, fields(1).toLong, (fields(2).toDouble, fields(3).toDouble, fields(4)))
+    Some(Edge(fields(0).toLong, fields(1).toLong, (fields(2).toDouble, fields(3).toDouble, fields(4))))
   }
 
 }
