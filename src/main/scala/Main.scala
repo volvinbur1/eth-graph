@@ -28,6 +28,9 @@ object Main {
     println("Top rank static: ")
     topTankStatic.foreach(println)
 
+    val triangleCounts = graph.countTriangles()
+    println("Triangles count for 5 subsequent subgraph: " + triangleCounts.toString)
+
     sc.stop()
   }
 }
