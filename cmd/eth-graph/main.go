@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	for _, filePath := range []string{"dataset/test/wallets.tsv", "dataset/test/transactions.tsv"} {
+	for _, filePath := range []string{os.Args[1], os.Args[2]} {
 		file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0755)
 		if err != nil {
 			panic(err)
