@@ -22,5 +22,6 @@
 
 project
 target
+out
 
 go.sum
