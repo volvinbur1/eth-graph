@@ -2,6 +2,7 @@ package com.github.ethgraph
 package etherem
 
 import org.apache.spark._
+import org.apache.spark.graphx.lib.LabelPropagation
 import org.apache.spark.graphx.{Graph, _}
 import org.apache.spark.rdd.RDD
 
@@ -114,6 +115,19 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
       result += s"$firstVertexAddress   ...   $lastVertexAddress"
     })
 
+    result.toList
+  }
+
+  def labelPropagation(iterCnt: Int): List[String] = {
+    val result = new ListBuffer[String]()
+    LabelPropagation.run(graph, iterCnt)
+      .vertices
+      .collect()
+      .foreach(item => {
+        val firstWallet = vertices.filter(_._1 == item._1).first()._2
+        val secondWallet = vertices.filter(_._1 == item._2).first()._2
+        result += s"${item._1}\t($firstWallet)\t${item._2}\t($secondWallet)\n"
+      })
     result.toList
   }
 }
