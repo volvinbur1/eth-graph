@@ -43,6 +43,8 @@ object Main {
     labelPropagationResult.foreach(propagationWriter.write)
     propagationWriter.close()
 
+    val diameter = graph.calculateGraphDiameter()
+    println(s"Diameter: ${diameter._1}. From ${diameter._2} to ${diameter._3}")
     sc.stop()
   }
 }

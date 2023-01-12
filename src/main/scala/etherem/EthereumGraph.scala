@@ -130,4 +130,22 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
       })
     result.toList
   }
+
+  def calculateGraphDiameter(): (Double, String, String) = {
+    var maxDist = 0.0
+    var srcWallet = ""
+    var dstWalletId = 1L
+
+    vertices.collect().foreach(item => {
+      implicit val pathOrdering: Ordering[(VertexId, (Boolean, Double, List[VertexId]))] = Ordering.by(_._2._2)
+      val max = dijkstra(item._1).vertices.max()(pathOrdering)
+      if (maxDist < max._2._2) {
+        maxDist = max._2._2
+        srcWallet = item._2
+        dstWalletId = max._1
+      }
+    })
+    val dstWallet = vertices.filter(_._1 == dstWalletId).first()._2
+    (maxDist, srcWallet, dstWallet)
+  }
 }
