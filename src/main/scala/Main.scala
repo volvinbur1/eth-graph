@@ -48,8 +48,13 @@ object Main {
     val mostSpentVertex = graph.mostSpentVertex()
     println(s"Most spent vertex is ${mostSpentVertex._1} with total value ${mostSpentVertex._2}")
 
+    val mostReceivedVertex = graph.mostReceivedVertex()
+    println(s"Most received vertex is ${mostReceivedVertex._1} with total value ${mostReceivedVertex._2}")
     val mostSpentFeeVertex = graph.mostSpentFeeVertex()
     println(s"Most spent fee vertex is ${mostSpentFeeVertex._1} with total value ${mostSpentFeeVertex._2}")
+
+    val leastSpentFeeVertex = graph.leastSpentFeeVertex()
+    println(s"Least spent fee vertex is ${leastSpentFeeVertex._1} with total value ${leastSpentFeeVertex._2}")
 
     sc.stop()
   }
