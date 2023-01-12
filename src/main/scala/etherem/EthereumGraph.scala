@@ -140,9 +140,9 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
     var srcWallet = ""
     var dstWalletId = 1L
 
-    vertices.map(item => {
+    vertices.collect().foreach(item => {
       implicit val pathOrdering: Ordering[(VertexId, (Boolean, Double, List[VertexId]))] = Ordering.by(_._2._2)
-      val max = dijkstra(item._1).vertices.max()(pathOrdering)
+      val max = dijkstra(item._1).vertices.filter(_._2._2 != Double.MaxValue).max()(pathOrdering)
       if (maxDist < max._2._2) {
         maxDist = max._2._2
         srcWallet = item._2
