@@ -56,6 +56,15 @@ object Main {
     val leastSpentFeeVertex = graph.leastSpentFeeVertex()
     println(s"Least spent fee vertex is ${leastSpentFeeVertex._1} with total value ${leastSpentFeeVertex._2}")
 
+    val maxVertexDegree = graph.maxVertexDegree()
+    println(s"Max vertex ${maxVertexDegree._1} degree value ${maxVertexDegree._2}")
+
+    val maxVertexInDegree = graph.maxVertexInDegree()
+    println(s"Max vertex ${maxVertexInDegree._1} inDegree value ${maxVertexInDegree._2}")
+
+    val maxVertexOutDegree = graph.maxVertexOutDegree()
+    println(s"Max vertex ${maxVertexOutDegree._1} outDegree value ${maxVertexOutDegree._2}")
+
     sc.stop()
   }
 }

@@ -15,6 +15,10 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
 
   private val graph = Graph(vertices, edges)
 
+  private def getVertexDesc(vertexId: VertexId) = {
+    vertices.filter(_._1 == vertexId).first()._2
+  }
+
   private def dijkstra(srcId: VertexId) = {
     var distancesGraph = graph.mapVertices((vId,_) => (
       false,
@@ -54,7 +58,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
     val resultingVertex = distances.vertices.filter(pred => pred._1 == dstId).first()
 
     val hops = new ListBuffer[String]()
-    resultingVertex._2._3.foreach(x => hops += vertices.filter(_._1 == x).first()._2)
+    resultingVertex._2._3.foreach(x => hops += getVertexDesc(x))
 
     (resultingVertex._2._2, hops.toList)
   }
@@ -69,7 +73,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
 
   private def formatRankResult(rankVertices: RDD[(VertexId, Double)], topCnt: Int) = {
     val result = new ListBuffer[(String, Double)]()
-    rankVertices.take(topCnt).foreach({ case (vId, vd) => result += ((vertices.filter(_._1 == vId).first()._2, vd)) })
+    rankVertices.take(topCnt).foreach({ case (vId, vd) => result += ((getVertexDesc(vId), vd)) })
 
     result.toList
   }
@@ -110,8 +114,8 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
         .vertices
         .sortBy({ case (_, vd) => vd }, ascending = true).collect()
 
-      val firstVertexAddress = vertices.filter(_._1 == subgraphRanks.head._1).first()._2
-      val lastVertexAddress = vertices.filter(_._1 == subgraphRanks.last._1).first()._2
+      val firstVertexAddress = getVertexDesc(subgraphRanks.head._1)
+      val lastVertexAddress = getVertexDesc(subgraphRanks.last._1)
       result += s"$firstVertexAddress   ...   $lastVertexAddress"
     })
 
@@ -124,8 +128,8 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
       .vertices
       .collect()
       .foreach(item => {
-        val firstWallet = vertices.filter(_._1 == item._1).first()._2
-        val secondWallet = vertices.filter(_._1 == item._2).first()._2
+        val firstWallet = getVertexDesc(item._1)
+        val secondWallet = getVertexDesc(item._2)
         result += s"${item._1}\t($firstWallet)\t${item._2}\t($secondWallet)\n"
       })
     result.toList
@@ -136,7 +140,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
     var srcWallet = ""
     var dstWalletId = 1L
 
-    vertices.collect().foreach(item => {
+    vertices.map(item => {
       implicit val pathOrdering: Ordering[(VertexId, (Boolean, Double, List[VertexId]))] = Ordering.by(_._2._2)
       val max = dijkstra(item._1).vertices.max()(pathOrdering)
       if (maxDist < max._2._2) {
@@ -145,28 +149,44 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
         dstWalletId = max._1
       }
     })
-    val dstWallet = vertices.filter(_._1 == dstWalletId).first()._2
+    val dstWallet = getVertexDesc(dstWalletId)
     (maxDist, srcWallet, dstWallet)
   }
 
   implicit val vertexOrdering: Ordering[(VertexId, Double)] = Ordering.by(_._2)
   def mostSpentVertex(): (String, Double) = {
     val maxVertex = graph.aggregateMessages[Double](ctx => ctx.sendToSrc(ctx.attr._1), _ + _).max()(vertexOrdering)
-    (vertices.filter(_._1 == maxVertex._1).first()._2, maxVertex._2)
+    (getVertexDesc(maxVertex._1), maxVertex._2)
   }
 
   def mostReceivedVertex(): (String, Double) = {
     val maxVertex = graph.aggregateMessages[Double](ctx => ctx.sendToDst(ctx.attr._1), _ + _).max()(vertexOrdering)
-    (vertices.filter(_._1 == maxVertex._1).first()._2, maxVertex._2)
+    (getVertexDesc(maxVertex._1), maxVertex._2)
   }
 
   def mostSpentFeeVertex(): (String, Double) = {
     val maxVertex = graph.aggregateMessages[Double](ctx => ctx.sendToSrc(ctx.attr._2), _ + _).max()(vertexOrdering)
-    (vertices.filter(_._1 == maxVertex._1).first()._2, maxVertex._2)
+    (getVertexDesc(maxVertex._1), maxVertex._2)
   }
 
   def leastSpentFeeVertex(): (String, Double) = {
     val maxVertex = graph.aggregateMessages[Double](ctx => ctx.sendToSrc(ctx.attr._2), _ + _).min()(vertexOrdering)
-    (vertices.filter(_._1 == maxVertex._1).first()._2, maxVertex._2)
+    (getVertexDesc(maxVertex._1), maxVertex._2)
+  }
+
+  implicit val degreeOrdering: Ordering[(VertexId, Int)] = Ordering.by(_._2)
+  def maxVertexDegree(): (String, PartitionID) = {
+    val degrees = graph.degrees.max()(degreeOrdering)
+    (getVertexDesc(degrees._1), degrees._2)
+  }
+
+  def maxVertexInDegree(): (String, PartitionID) = {
+    val degrees = graph.inDegrees.max()(degreeOrdering)
+    (getVertexDesc(degrees._1), degrees._2)
+  }
+
+  def maxVertexOutDegree(): (String, PartitionID) = {
+    val degrees = graph.outDegrees.max()(degreeOrdering)
+    (getVertexDesc(degrees._1), degrees._2)
   }
 }
