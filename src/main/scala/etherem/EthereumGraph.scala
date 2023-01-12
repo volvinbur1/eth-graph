@@ -57,4 +57,28 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
 
     (resultingVertex._2._2, hops.toList)
   }
+
+  private def dynamicRank(tolerance: Double): VertexRDD[Double] = {
+    graph.pageRank(tolerance).vertices
+  }
+
+  private def staticRank(iterNumber: Int): VertexRDD[Double] = {
+    graph.staticPageRank(iterNumber).vertices
+  }
+
+  private def formatRankResult(rankVertices: RDD[(VertexId, Double)], topCnt: Int) = {
+    val result = new ListBuffer[(String, Double)]()
+    rankVertices.take(topCnt).foreach({ case (vId, vd) => result += ((vertexes.filter(_._1 == vId).first()._2, vd)) })
+
+    result.toList
+  }
+  def getTopDynamicRank(tolerance: Double, topCnt: Int, ascending: Boolean): List[(String, Double)] = {
+    val rankVertices = dynamicRank(tolerance).sortBy({ case (_, vd) => vd}, ascending = ascending)
+    formatRankResult(rankVertices, topCnt)
+  }
+
+  def getTopStaticRank(iterNumber: Int, topCnt: Int, ascending: Boolean): List[(String, Double)] = {
+    val rankVertices = staticRank(iterNumber).sortBy({ case (_, vd) => vd }, ascending = ascending)
+    formatRankResult(rankVertices, topCnt)
+  }
 }
