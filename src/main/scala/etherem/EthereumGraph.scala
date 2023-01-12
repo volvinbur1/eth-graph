@@ -32,7 +32,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
       val newDistances = distancesGraph
         .aggregateMessages[(Double, List[VertexId])] (
           ctx => if (ctx.srcId == currentVertexId)
-            ctx.sendToDst((ctx.srcAttr._2 + ctx.attr._1, ctx.srcAttr._3 :+ ctx.dstId)),
+            ctx.sendToDst((ctx.srcAttr._2 + ctx.attr._2, ctx.srcAttr._3 :+ ctx.dstId)),
           (a,b) => if (a._1 < b._1) a else b)
 
       distancesGraph = distancesGraph
