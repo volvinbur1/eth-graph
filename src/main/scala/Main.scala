@@ -14,9 +14,9 @@ object Main {
     val transactionsFile = "dataset/test/transactions.tsv"
 
     val graph = new EthereumGraph(sc, walletsFile, transactionsFile)
-//    val shortestPath = graph.shortestPath("A", "F")
-//    println("Shortest path value: " + shortestPath._1.toString)
-//    println("Shortest path hops: " + shortestPath._2.toString)
+    val shortestPath = graph.shortestPath("A", "F")
+    println("Shortest path value: " + shortestPath._1.toString)
+    println("Shortest path hops: " + shortestPath._2.toString)
 
     val tolerance = 0.001
     val topRankDynamic = graph.getTopDynamicRank(tolerance, 10, ascending = false)
