@@ -85,10 +85,11 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
   def countTriangles(): List[PartitionID] = {
     val newGraph = graph.partitionBy(PartitionStrategy.RandomVertexCut)
 
+    val multiplier = vertexes.collect().length / 5
     val result = new ListBuffer[PartitionID]()
     (0 to 4).map(idx => {
       val triangleCnt = newGraph.subgraph(vpred = {
-        case (vId, _) => (vId >= idx * 100_000 && vId <= (idx + 1) * 100_000)
+        case (vId, _) => (vId >= idx * multiplier && vId <= (idx + 1) * multiplier)
       }).triangleCount().vertices.map(_._2).reduce(_ + _)
       result += triangleCnt
     })
