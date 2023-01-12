@@ -148,4 +148,16 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
     val dstWallet = vertices.filter(_._1 == dstWalletId).first()._2
     (maxDist, srcWallet, dstWallet)
   }
+
+  implicit val vertexOrdering: Ordering[(VertexId, Double)] = Ordering.by(_._2)
+  def mostSpentVertex(): (String, Double) = {
+    val maxVertex = graph.aggregateMessages[Double](ctx => ctx.sendToSrc(ctx.attr._1), _ + _).max()(vertexOrdering)
+    (vertices.filter(_._1 == maxVertex._1).first()._2, maxVertex._2)
+  }
+
+  def mostSpentFeeVertex(): (String, Double) = {
+    val maxVertex = graph.aggregateMessages[Double](ctx => ctx.sendToSrc(ctx.attr._2), _ + _).max()(vertexOrdering)
+    (vertices.filter(_._1 == maxVertex._1).first()._2, maxVertex._2)
+  }
+
 }

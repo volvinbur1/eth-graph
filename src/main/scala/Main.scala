@@ -9,7 +9,6 @@ import org.apache.spark.SparkContext
 
 object Main {
   def main(args: Array[String]): Unit = {
-//    Logger.getLogger("org").setLevel(Level.ERROR)
     val sc = new SparkContext("local[*]", "EthGraph")
 
     val walletsFile = "dataset/test/wallets.tsv"
@@ -45,6 +44,13 @@ object Main {
 
     val diameter = graph.calculateGraphDiameter()
     println(s"Diameter: ${diameter._1}. From ${diameter._2} to ${diameter._3}")
+
+    val mostSpentVertex = graph.mostSpentVertex()
+    println(s"Most spent vertex is ${mostSpentVertex._1} with total value ${mostSpentVertex._2}")
+
+    val mostSpentFeeVertex = graph.mostSpentFeeVertex()
+    println(s"Most spent fee vertex is ${mostSpentFeeVertex._1} with total value ${mostSpentFeeVertex._2}")
+
     sc.stop()
   }
 }
