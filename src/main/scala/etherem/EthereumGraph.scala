@@ -9,10 +9,10 @@ import scala.collection.mutable.ListBuffer
 
 class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: String) {
 
-  private def vertexes: RDD[(VertexId, String)] = sc.textFile(walletsFile).flatMap(InputParser.getWallets)
+  private def vertices: RDD[(VertexId, String)] = sc.textFile(walletsFile).flatMap(InputParser.getWallets)
   private def edges: RDD[Edge[(Double, Double, String)]] = sc.textFile(transactionsFile).flatMap(InputParser.getTransaction)
 
-  private val graph = Graph(vertexes, edges)
+  private val graph = Graph(vertices, edges)
 
   private def dijkstra(srcId: VertexId) = {
     var distancesGraph = graph.mapVertices((vId,_) => (
@@ -46,14 +46,14 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
   }
 
   def shortestPath(srcWallet: String, dstWallet: String): (Double, List[String]) = {
-    val srcId = vertexes.filter(_._2 == srcWallet).first()._1
-    val dstId = vertexes.filter(_._2 == dstWallet).first()._1
+    val srcId = vertices.filter(_._2 == srcWallet).first()._1
+    val dstId = vertices.filter(_._2 == dstWallet).first()._1
 
     val distances = dijkstra(srcId)
     val resultingVertex = distances.vertices.filter(pred => pred._1 == dstId).first()
 
     val hops = new ListBuffer[String]()
-    resultingVertex._2._3.foreach(x => hops += vertexes.filter(_._1 == x).first()._2)
+    resultingVertex._2._3.foreach(x => hops += vertices.filter(_._1 == x).first()._2)
 
     (resultingVertex._2._2, hops.toList)
   }
@@ -68,7 +68,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
 
   private def formatRankResult(rankVertices: RDD[(VertexId, Double)], topCnt: Int) = {
     val result = new ListBuffer[(String, Double)]()
-    rankVertices.take(topCnt).foreach({ case (vId, vd) => result += ((vertexes.filter(_._1 == vId).first()._2, vd)) })
+    rankVertices.take(topCnt).foreach({ case (vId, vd) => result += ((vertices.filter(_._1 == vId).first()._2, vd)) })
 
     result.toList
   }
@@ -85,13 +85,28 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
   def countTriangles(): List[PartitionID] = {
     val newGraph = graph.partitionBy(PartitionStrategy.RandomVertexCut)
 
-    val multiplier = vertexes.collect().length / 5
+    val multiplier = vertices.collect().length / 5
     val result = new ListBuffer[PartitionID]()
     (0 to 4).map(idx => {
       val triangleCnt = newGraph.subgraph(vpred = {
         case (vId, _) => (vId >= idx * multiplier && vId <= (idx + 1) * multiplier)
       }).triangleCount().vertices.map(_._2).reduce(_ + _)
       result += triangleCnt
+    })
+    result.toList
+  }
+
+  def connectives(): List[String] = {
+    val connectedGraphGroups = graph.connectedComponents().vertices.groupBy(_._2)
+
+    val result = new ListBuffer[String]()
+    connectedGraphGroups.collect().foreach(pair => {
+      val firstVertexIdx = pair._2.toList.head._1
+      val lastVertexIdx = pair._2.toList.last._1
+
+      val firstVertexAddress = vertices.filter(_._1 == firstVertexIdx).first()._2
+      val lastVertexAddress = vertices.filter(_._1 == lastVertexIdx).first()._2
+      result += s"$firstVertexAddress   ...   $lastVertexAddress"
     })
     result.toList
   }

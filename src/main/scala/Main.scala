@@ -31,6 +31,8 @@ object Main {
     val triangleCounts = graph.countTriangles()
     println("Triangles count for 5 subsequent subgraph: " + triangleCounts.toString)
 
+    val connectives = graph.connectives()
+    println("Connectives: " + connectives.toString())
     sc.stop()
   }
 }
