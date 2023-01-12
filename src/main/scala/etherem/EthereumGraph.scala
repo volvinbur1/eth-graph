@@ -97,17 +97,23 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
   }
 
   def connectives(): List[String] = {
-    val connectedGraphGroups = graph.connectedComponents().vertices.groupBy(_._2)
+    implicit val connectivesOrdering: Ordering[(VertexId, VertexId)] = Ordering.by(_._2)
+    val connectedGraph = graph.connectedComponents()
+    val maxSubGraph = connectedGraph.vertices.max()(connectivesOrdering)._2
 
     val result = new ListBuffer[String]()
-    connectedGraphGroups.collect().foreach(pair => {
-      val firstVertexIdx = pair._2.toList.head._1
-      val lastVertexIdx = pair._2.toList.last._1
+    (1 to maxSubGraph.toInt).foreach(idx => {
+      val subgraphRanks = connectedGraph
+        .subgraph(vpred = (_, cnt) => idx == cnt)
+        .pageRank(0.001)
+        .vertices
+        .sortBy({ case (_, vd) => vd }, ascending = true).collect()
 
-      val firstVertexAddress = vertices.filter(_._1 == firstVertexIdx).first()._2
-      val lastVertexAddress = vertices.filter(_._1 == lastVertexIdx).first()._2
+      val firstVertexAddress = vertices.filter(_._1 == subgraphRanks.head._1).first()._2
+      val lastVertexAddress = vertices.filter(_._1 == subgraphRanks.last._1).first()._2
       result += s"$firstVertexAddress   ...   $lastVertexAddress"
     })
+
     result.toList
   }
 }
