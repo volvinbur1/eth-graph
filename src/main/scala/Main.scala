@@ -4,18 +4,25 @@ import etherem.EthereumGraph
 
 import java.io.{BufferedWriter, FileWriter}
 
-//import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Main {
   def main(args: Array[String]): Unit = {
     val sc = new SparkContext("local[*]", "EthGraph")
 
-    val walletsFile = "dataset/test/wallets.tsv"
-    val transactionsFile = "dataset/test/transactions.tsv"
+    var walletsFile = "wallets.tsv"
+    var transactionsFile = "transactions.tsv"
+    if (args.length > 1) walletsFile = args(1)
+    if (args.length > 2) transactionsFile = args(2)
 
     val graph = new EthereumGraph(sc, walletsFile, transactionsFile)
-    val shortestPath = graph.shortestPath("A", "F")
+
+    var srcWallet = "A"
+    var dstWallet = "F"
+    if (args.length > 3) srcWallet = args(3)
+    if (args.length > 4) dstWallet = args(4)
+
+    val shortestPath = graph.shortestPath(srcWallet, dstWallet)
     println("Shortest path value: " + shortestPath._1.toString)
     println("Shortest path hops: " + shortestPath._2.toString)
 
