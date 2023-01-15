@@ -27,8 +27,8 @@ Most received vertex is F with total value 25.0
 Most spent fee vertex is F with total value 0.19
 Least spent fee vertex is B with total value 0.005
 Max vertex C degree value 3
-Max vertex F inDegree value 2
-Max vertex A outDegree value 2
+Max vertex C inDegree value 2
+Max vertex D outDegree value 2
 
 
 
