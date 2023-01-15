@@ -94,7 +94,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
     val result = new ListBuffer[PartitionID]()
     (0 to 4).map(idx => {
       val triangleCnt = newGraph.subgraph(vpred = {
-        case (vId, _) => (vId >= idx * multiplier && vId <= (idx + 1) * multiplier)
+        case (vId, _) => vId >= idx * multiplier && vId <= (idx + 1) * multiplier
       }).triangleCount().vertices.map(_._2).reduce(_ + _)
       result += triangleCnt
     })
@@ -120,7 +120,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
       } else {
         val firstVertexAddress = getVertexDesc(subgraphVertices.first()._1)
         val lastVertexAddress = getVertexDesc(subgraphVertices.top(1).head._1)
-        result += s"$firstVertexAddress   ...   $lastVertexAddress"
+        result += s"$firstVertexAddress\t$lastVertexAddress\n"
       }
     })
 
