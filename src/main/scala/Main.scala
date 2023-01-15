@@ -118,11 +118,15 @@ object Main {
     var outputStr = "####### Shortest Path In The Graph #######\n"
 
     val shortestPath = graph.shortestPath(srcWallet, dstWallet)
-    outputStr += s"Shortest path from $srcWallet to $dstWallet is ${shortestPath._1}\n"
-    outputStr += "Path hops:\n"
-    shortestPath._2.foreach(item => {
-      outputStr += item + "\n"
-    })
+    if (shortestPath._1 == Double.MaxValue) {
+      outputStr += s"Vertices $srcWallet and $dstWallet are not connected to each other"
+    } else {
+      outputStr += s"Shortest path from $srcWallet to $dstWallet is ${shortestPath._1}\n"
+      outputStr += "Path hops:\n"
+      shortestPath._2.foreach(item => {
+        outputStr += item + "\n"
+      })
+    }
     println(outputStr)
     outputStr
   }
