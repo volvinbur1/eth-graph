@@ -135,7 +135,7 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
       .foreach(item => {
         val firstWallet = getVertexDesc(item._1)
         val secondWallet = getVertexDesc(item._2)
-        result += s"${item._1}\t($firstWallet)\t${item._2}\t($secondWallet)\n"
+        result += s"${item._1}\t$firstWallet\t${item._2}\t$secondWallet\n"
       })
     result.toList
   }
