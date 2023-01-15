@@ -37,7 +37,6 @@ object Main {
     resultingOutput += processTriangleCount(graph)
     resultingOutput += separator
     resultingOutput += processConnectives(graph, getConnectivesOutputFile(args))
-    resultingOutput += separator
 
     val reportFile = getReportOutputFile(args)
     Files.write(Paths.get(reportFile), resultingOutput.getBytes(StandardCharsets.UTF_8))

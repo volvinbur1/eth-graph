@@ -25,3 +25,6 @@ target
 out
 
 go.sum
+/connectives.tsv
+/labelPropagation.tsv
+/report.txt
