@@ -1,0 +1,68 @@
+####### Graph Diameter #######
+Diameter: 0.33299999999999996. From C to I
+
+
+
+
+####### Shortest Path In The Graph #######
+Shortest path from A to F is 0.017
+Path hops:
+A
+D
+F
+
+
+
+
+####### Label Propagation #######
+Label propagation result count 8
+Label propagation exact values saved in dataset/test/report/labelPropagation.tsv
+
+
+
+
+####### Vertices Analytics #######
+Most spent vertex is D with total value 22.0
+Most received vertex is F with total value 25.0
+Most spent fee vertex is F with total value 0.19
+Least spent fee vertex is B with total value 0.005
+Max vertex C degree value 3
+Max vertex F inDegree value 2
+Max vertex A outDegree value 2
+
+
+
+
+####### Page Rank #######
+Top 10 rank (dynamic):
+(I,1.8959588268327077)
+(F,1.7159192544277901)
+(E,1.1924409271194718)
+(C,0.8882511371181008)
+(J,0.8092408020528095)
+(D,0.6233341313109478)
+(B,0.4374274605690862)
+(A,0.4374274605690862)
+
+Top 10 rank (static):
+(I,1.8959588268327079)
+(F,1.7159192544277901)
+(E,1.1924409271194718)
+(C,0.8882511371181008)
+(J,0.8092408020528095)
+(D,0.6233341313109478)
+(B,0.4374274605690862)
+(A,0.4374274605690862)
+
+
+
+
+####### Count Triangles #######
+Triangles count for 5 subsequent subgraph: List(0, 0, 0, 0, 0)
+
+
+
+
+####### Connectives #######
+Total connectives count is 2
+Total connectives exact result saved in dataset/test/report/connectives.tsv
