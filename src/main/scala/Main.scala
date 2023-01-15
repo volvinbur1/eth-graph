@@ -28,7 +28,7 @@ object Main {
     resultingOutput += separator
     resultingOutput += processShortestPath(graph, getSrcWallet(args), getDstWallet(args))
     resultingOutput += separator
-    resultingOutput += processLabelPropagation(graph, getLabelPropagationIterations(args), getLabelPropagationOutputFile(args))
+    resultingOutput += processLabelPropagation(graph, getLabelPropagationIterations(args), getLabelPropagationOutputFile(args), sc)
     resultingOutput += separator
     resultingOutput += processAnalytics(graph)
     resultingOutput += separator
@@ -36,10 +36,11 @@ object Main {
     resultingOutput += separator
     resultingOutput += processTriangleCount(graph)
     resultingOutput += separator
-    resultingOutput += processConnectives(graph, getConnectivesOutputFile(args))
+    resultingOutput += processConnectives(graph, getConnectivesOutputFile(args), sc)
 
     val reportFile = getReportOutputFile(args)
     Files.write(Paths.get(reportFile), resultingOutput.getBytes(StandardCharsets.UTF_8))
+    sc.parallelize(Seq(resultingOutput)).saveAsTextFile(reportFile)
     println(s"Processing report saved at $reportFile")
 
     sc.stop()
@@ -74,7 +75,7 @@ object Main {
     outputStr
   }
 
-  private def processConnectives(graph: EthereumGraph, outputFile: String): String = {
+  private def processConnectives(graph: EthereumGraph, outputFile: String, sc: SparkContext): String = {
     var outputStr = "####### Connectives #######\n"
     val connectives = graph.connectives()
     outputStr += s"Total connectives count is ${connectives.length}\n"
@@ -82,6 +83,7 @@ object Main {
     val writer = new BufferedWriter(new FileWriter(outputFile))
     connectives.foreach(writer.write)
     writer.close()
+    sc.parallelize(connectives).saveAsTextFile(outputFile)
 
     outputStr += s"Total connectives exact result saved in $outputFile\n"
     println(outputStr)
@@ -133,7 +135,7 @@ object Main {
     outputStr
   }
 
-  private def processLabelPropagation(graph: EthereumGraph, iterations: Int, outputFile: String): String = {
+  private def processLabelPropagation(graph: EthereumGraph, iterations: Int, outputFile: String, sc: SparkContext): String = {
     var outputStr = "####### Label Propagation #######\n"
     val labelPropagationResult = graph.labelPropagation(iterations)
     outputStr += s"Label propagation result count ${labelPropagationResult.length}\n"
@@ -141,6 +143,7 @@ object Main {
     val writer = new BufferedWriter(new FileWriter(outputFile))
     labelPropagationResult.foreach(writer.write)
     writer.close()
+    sc.parallelize(labelPropagationResult).saveAsTextFile(outputFile)
 
     outputStr += s"Label propagation exact values saved in $outputFile\n"
     println(outputStr)
