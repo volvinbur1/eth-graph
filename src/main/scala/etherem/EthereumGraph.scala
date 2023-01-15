@@ -10,10 +10,10 @@ import scala.collection.mutable.ListBuffer
 
 class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: String) {
 
-  private def vertices: RDD[(VertexId, String)] = sc.textFile(walletsFile).flatMap(InputParser.getWallets)
-  private def edges: RDD[Edge[(Double, Double, String)]] = sc.textFile(transactionsFile).flatMap(InputParser.getTransaction)
+  private def vertices: RDD[(VertexId, String)] = sc.textFile(walletsFile).flatMap(InputParser.getWallets).cache()
+  private def edges: RDD[Edge[(Double, Double, String)]] = sc.textFile(transactionsFile).flatMap(InputParser.getTransaction).cache()
 
-  private val graph = Graph(vertices, edges)
+  private val graph = Graph(vertices, edges).cache()
 
   private def getVertexDesc(vertexId: VertexId) = {
     vertices.filter(_._1 == vertexId).first()._2
