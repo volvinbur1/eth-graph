@@ -104,19 +104,24 @@ class EthereumGraph (sc: SparkContext, walletsFile: String, transactionsFile: St
   def connectives(): List[String] = {
     implicit val connectivesOrdering: Ordering[(VertexId, VertexId)] = Ordering.by(_._2)
     val connectedGraph = graph.connectedComponents()
-    val maxSubGraph = connectedGraph.vertices.max()(connectivesOrdering)._2
+    val maxSubgraph = connectedGraph.vertices.max()(connectivesOrdering)._2
+
+    println(s"[ETH-GRAPH][INFO] Max value of connected subgraphs is $maxSubgraph")
 
     val result = new ListBuffer[String]()
-    (1 to maxSubGraph.toInt).foreach(idx => {
-      val subgraphRanks = connectedGraph
+    (1 to maxSubgraph.toInt).foreach(idx => {
+      val subgraphVertices = connectedGraph
         .subgraph(vpred = (_, cnt) => idx == cnt)
-        .pageRank(0.001)
         .vertices
-        .sortBy({ case (_, vd) => vd }, ascending = true).collect()
+//        .sortBy({ case (_, vd) => vd }, ascending = true)
 
-      val firstVertexAddress = getVertexDesc(subgraphRanks.head._1)
-      val lastVertexAddress = getVertexDesc(subgraphRanks.last._1)
-      result += s"$firstVertexAddress   ...   $lastVertexAddress"
+      if (subgraphVertices.count() == 0) {
+        println(s"[ETH-GRAPH][INFO] Subgraph at $idx is empty")
+      } else {
+        val firstVertexAddress = getVertexDesc(subgraphVertices.first()._1)
+        val lastVertexAddress = getVertexDesc(subgraphVertices.top(1).head._1)
+        result += s"$firstVertexAddress   ...   $lastVertexAddress"
+      }
     })
 
     result.toList
