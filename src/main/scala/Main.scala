@@ -3,19 +3,17 @@ package com.github.ethgraph
 import etherem.EthereumGraph
 
 import java.io.{BufferedWriter, FileWriter}
-
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkContext, SparkConf}
 
 object Main {
   def main(args: Array[String]): Unit = {
     val sc = new SparkContext("local[*]", "EthGraph")
 
-    var walletsFile = "wallets.tsv"
-    var transactionsFile = "transactions.tsv"
-    if (args.length > 1) walletsFile = args(1)
-    if (args.length > 2) transactionsFile = args(2)
+    var sparkConf = new SparkConf()
+    sparkConf = sparkConf.set("spark.driver.memory", getSparkDriverMemory(args))
+    sparkConf = sparkConf.set("spark.driver.memoryOverheadFactor", getSparkDriverMemoryOverheadFactor(args))
 
-    val graph = new EthereumGraph(sc, walletsFile, transactionsFile)
+    val sc = new SparkContext("local[*]", "EthGraph", conf = sparkConf)
 
     var srcWallet = "A"
     var dstWallet = "F"
